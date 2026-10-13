@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的第一个 AI 流式聊天室</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        #chat-box { border: 1px solid #ddd; padding: 15px; min-height: 200px; border-radius: 8px; background: #fafafa; white-space: pre-wrap; }
+        .input-group { margin-top: 15px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>🤖 我的专属 AI 流式助手</h2>
+    <div id="chat-box">等待提问中...</div>
+    <div class="input-group">
+        <input type="text" id="user-input" placeholder="输入问题，例如：用一句话介绍 Python..." />
+        <button onclick="sendMessage()">发送</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const box = document.getElementById("chat-box");
+            const prompt = input.value.trim();
+            if (!prompt) return;
+
+            box.innerText = "🤖 AI 思考中...\n";
+            input.value = "";
+
+            // 向我们刚刚写好的 FastAPI 后端发起请求！
+            const response = await fetch("/api/chat/stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: prompt })
+            });
+
+            // 获取数据流的读取器
+            const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+            box.innerText = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                // 按行解析 SSE 格式
+                const lines = value.split("\n");
+                for (const line of lines) {
+                    if (line.startsWith("data: ") && !line.includes("[DONE]")) {
+                        try {
+                            const data = JSON.parse(line.replace("data: ", ""));
+                            box.innerText += data.text; // 逐字追加到网页上！
+                        } catch (e) {}
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
