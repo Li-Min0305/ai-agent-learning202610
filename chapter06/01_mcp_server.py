@@ -14,7 +14,7 @@ def init_db():
         name TEXT,
         major TEXT,
         gpa REAL,
-        award TEXT,
+        award TEXT
     )
 """)
     cursor.executemany("""
@@ -31,7 +31,7 @@ db_conn = init_db()
 
 @mcp.tool()
 def query_database(sql: str) -> str:
-    """"
+    """
     在本地企业数据库执行 SQL 查询语句。
     数据表为 students，包含字段：id，name，major，gpa，award。
     示例：SELECT * FROM students WHERE name = '小李'
@@ -58,5 +58,5 @@ def check_disk_space() -> str:
         "free_gb": round(free/ (2**30), 2)
     }, ensure_ascii=False)
 
-if "__name__":
+if __name__ =="__main__":
     mcp.run(transport="stdio")
