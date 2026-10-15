@@ -11,7 +11,7 @@ dependencies = [
     "chromadb>=1.5.9",
     "fastapi>=0.142.4",
     "langgraph>=1.2.14",
-    "mcp>=1.0.0",
+    "mcp<2",
     "numpy>=2.5.3",
     "openai>=3.26.0",
     "pydantic>=2.13.5",
